@@ -1,0 +1,16 @@
+# Aggressive Obsidian dir exclude
+.obsidian/workspace/*
+.obsidian/workspace*.json
+.obsidian/plugins/*
+.trash/
+obsidian/.obsidian/
+obsidian/.trash/
+
+# Exclude Untitled Notes
+Untitled*
+obsidian/Untitled*
+
+# OS or Editors
+.DS_Store
+.vscode/
+.idea/

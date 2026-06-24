@@ -1,0 +1,3 @@
+- Color code production (RED) database connections
+- All software engineers must be able to whiteboard/diagram different application solutions
+- I don’t work on weekends

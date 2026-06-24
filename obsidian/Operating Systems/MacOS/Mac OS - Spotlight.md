@@ -1,0 +1,10 @@
+
+# Reindex Spotlight
+
+
+```sh
+sudo mdutil -a -i off   
+sudo rm -rf /.Spotlight*
+sudo mdutil -a -i on    
+sudo mdutil -E
+```

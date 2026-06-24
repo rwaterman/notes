@@ -1,0 +1,3 @@
+[**Notes to Myself on Software Engineering**](https://medium.com/s/story/notes-to-myself-on-software-engineering-c890f16f4e4d)
+[**Hacks: Your Boss Is Not Your Friend**](https://medium.com/pragmatic-programmers/hacks-your-boss-is-not-your-friend-f92257d635a7)
+[**Top lessons learned from working with a 10x developer**](https://levelup.gitconnected.com/top-lessons-learned-from-working-with-a-10x-developer-51de12383e25)
