@@ -4,7 +4,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { ACCOUNT, REGION, GITHUB_REPO, OIDC_PROVIDER_ARN } from './site-config';
 
 /**
- * Account-global pieces for docs CI:
+ * Account-global pieces for notes CI:
  *  - imports the existing GitHub Actions OIDC provider (owned by the `website` repo's
  *    stack; one per account, cannot be recreated)
  *  - creates the infra-deploy role assumed by CI to run `cdk deploy`
@@ -24,8 +24,8 @@ export class SharedStack extends cdk.Stack {
     // CI role for `cdk deploy`. It holds no service permissions of its own — it can only
     // assume the CDK bootstrap roles, which carry the actual provisioning permissions.
     const infraRole = new iam.Role(this, 'InfraDeployRole', {
-      roleName: 'docs-infra-deploy',
-      description: 'GitHub Actions role to run cdk deploy for docs (assumes CDK bootstrap roles only)',
+      roleName: 'notes-infra-deploy',
+      description: 'GitHub Actions role to run cdk deploy for notes (assumes CDK bootstrap roles only)',
       assumedBy: new iam.OpenIdConnectPrincipal(this.oidcProvider, {
         StringEquals: {
           'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',

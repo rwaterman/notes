@@ -1,3 +1,3 @@
-# Rick's Docs
+# Rick's Notes
 
-Personal technical notes and reference material published as Rick's docs site.
+Personal technical notes and reference material published as Rick's notes site.

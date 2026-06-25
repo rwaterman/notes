@@ -1,4 +1,4 @@
-name: Deploy docs infra
+name: Deploy notes infra
 
 on:
   workflow_dispatch:
@@ -35,7 +35,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/docs-infra-deploy
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/notes-infra-deploy
           aws-region: ${{ env.AWS_REGION }}
 
       - name: cdk deploy

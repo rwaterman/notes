@@ -8,7 +8,6 @@ import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
-import * as wafv2 from 'aws-cdk-lib/aws-wafv2';
 import { HOSTED_ZONE_ID, ZONE_NAME, GITHUB_REPO, SiteEnv } from './site-config';
 
 export interface SiteStackProps extends cdk.StackProps {
@@ -17,7 +16,7 @@ export interface SiteStackProps extends cdk.StackProps {
 }
 
 /**
- * One docs environment: private S3 bucket behind a CloudFront distribution (Origin
+ * One notes environment: private S3 bucket behind a CloudFront distribution (Origin
  * Access Control), an in-region ACM certificate, Route53 alias records, a
  * directory-index CloudFront Function, and a branch-scoped OIDC role for content deploys.
  */
@@ -50,55 +49,19 @@ export class SiteStack extends cdk.Stack {
       code: cloudfront.FunctionCode.fromInline(DIRECTORY_INDEX_FUNCTION),
     });
 
-    const webAcl = new wafv2.CfnWebACL(this, 'WebAcl', {
-      defaultAction: { allow: {} },
-      scope: 'CLOUDFRONT',
-      visibilityConfig: {
-        cloudWatchMetricsEnabled: true,
-        metricName: `docs-site-${site.envName}`,
-        sampledRequestsEnabled: true,
-      },
-      rules: [
-        {
-          name: 'SiteWideRateLimit',
-          priority: 0,
-          action: { block: {} },
-          statement: {
-            rateBasedStatement: {
-              aggregateKeyType: 'IP',
-              evaluationWindowSec: 600,
-              limit: 1000,
-            },
-          },
-          visibilityConfig: {
-            cloudWatchMetricsEnabled: true,
-            metricName: `docs-site-rate-${site.envName}`,
-            sampledRequestsEnabled: true,
-          },
-        },
-        {
-          name: 'AmazonIpReputationList',
-          priority: 1,
-          overrideAction: { none: {} },
-          statement: {
-            managedRuleGroupStatement: {
-              vendorName: 'AWS',
-              name: 'AWSManagedRulesAmazonIpReputationList',
-            },
-          },
-          visibilityConfig: {
-            cloudWatchMetricsEnabled: true,
-            metricName: `docs-ip-reputation-${site.envName}`,
-            sampledRequestsEnabled: true,
-          },
-        },
-      ],
-    });
+    // Shared "blanket" CloudFront WebACL, owned by the website repo's SharedStack and
+    // published to SSM there. Read its ARN at deploy time and associate this distribution
+    // with it instead of defining a per-repo WebACL. Requires the website WebsiteShared
+    // stack to have deployed first so the parameter exists.
+    const sharedWebAclArn = ssm.StringParameter.valueForStringParameter(
+      this,
+      '/website/shared/cloudfront-webacl-arn',
+    );
 
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
       domainNames: [site.domainName],
       certificate,
-      webAclId: webAcl.attrArn,
+      webAclId: sharedWebAclArn,
       defaultRootObject: 'index.html',
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
       defaultBehavior: {
@@ -124,8 +87,8 @@ export class SiteStack extends cdk.Stack {
     // Branch-scoped CI role: only this env's branch can assume it, and it can only touch
     // this env's bucket, distribution, and SSM parameters.
     const contentRole = new iam.Role(this, 'ContentDeployRole', {
-      roleName: `docs-content-${site.envName}`,
-      description: `GitHub Actions role to deploy ${site.envName} docs content`,
+      roleName: `notes-content-${site.envName}`,
+      description: `GitHub Actions role to deploy ${site.envName} notes content`,
       assumedBy: new iam.OpenIdConnectPrincipal(oidcProvider, {
         StringEquals: {
           'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
@@ -143,16 +106,16 @@ export class SiteStack extends cdk.Stack {
     contentRole.addToPolicy(
       new iam.PolicyStatement({
         actions: ['ssm:GetParameter', 'ssm:GetParameters'],
-        resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter/docs/${site.envName}/*`],
+        resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter/notes/${site.envName}/*`],
       }),
     );
 
     new ssm.StringParameter(this, 'BucketNameParam', {
-      parameterName: `/docs/${site.envName}/bucket-name`,
+      parameterName: `/notes/${site.envName}/bucket-name`,
       stringValue: bucket.bucketName,
     });
     new ssm.StringParameter(this, 'DistributionIdParam', {
-      parameterName: `/docs/${site.envName}/distribution-id`,
+      parameterName: `/notes/${site.envName}/distribution-id`,
       stringValue: distribution.distributionId,
     });
 

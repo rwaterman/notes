@@ -12,7 +12,7 @@ export const REGION = 'us-east-1';
 export const HOSTED_ZONE_ID = requireEnv('HOSTED_ZONE_ID');
 export const ZONE_NAME = 'rickgwaterman.com';
 
-export const GITHUB_REPO = 'rwaterman/docs';
+export const GITHUB_REPO = 'rwaterman/notes';
 
 /**
  * The GitHub Actions OIDC provider is an account-level singleton (one per URL per
@@ -22,11 +22,11 @@ export const GITHUB_REPO = 'rwaterman/docs';
 export const OIDC_PROVIDER_ARN = `arn:aws:iam::${ACCOUNT}:oidc-provider/token.actions.githubusercontent.com`;
 
 export interface SiteEnv {
-  /** PascalCase suffix used in stack ids, e.g. "Dev" -> DocsSiteDev. */
+  /** PascalCase suffix used in stack ids, e.g. "Dev" -> NotesSiteDev. */
   id: string;
   /** Lowercase environment key used in role names and SSM paths, e.g. "dev". */
   envName: string;
-  /** Primary domain served, e.g. "docs-dev.rickgwaterman.com". */
+  /** Primary domain served, e.g. "notes-dev.rickgwaterman.com". */
   domainName: string;
   /** Git branch whose pushes deploy this environment. */
   branch: string;
@@ -36,13 +36,13 @@ export const SITE_ENVS: SiteEnv[] = [
   {
     id: 'Dev',
     envName: 'dev',
-    domainName: 'docs-dev.rickgwaterman.com',
+    domainName: 'notes-dev.rickgwaterman.com',
     branch: 'develop',
   },
   {
     id: 'Prod',
     envName: 'prod',
-    domainName: 'docs.rickgwaterman.com',
+    domainName: 'notes.rickgwaterman.com',
     branch: 'develop',
   },
 ];
