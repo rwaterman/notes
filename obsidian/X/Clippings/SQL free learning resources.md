@@ -8,6 +8,8 @@ description: "Enjoy the videos and music you love, upload original content, and 
 tags:
   - "clippings"
 ---
+
+> **Third-party clipping** by Jack Flick — original at [www.youtube.com](https://www.youtube.com/shorts/AzWpjhjL44I). Saved here for reference; the content belongs to its author.
 ![](https://www.youtube.com/watch?v=AzWpjhjL44I)
 
 Enjoy the videos and music you love, upload original content, and share it all with friends, family, and the world on YouTube.

@@ -7,7 +7,7 @@ configuration:
   analytics:
     provider: plausible
   locale: en-US
-  baseUrl: kb.rickgwaterman.com
+  baseUrl: notes.rickgwaterman.com
   ignorePatterns:
     - private
     - templates
@@ -227,8 +227,8 @@ plugins:
     enabled: true
     options:
       links:
-        GitHub: https://github.com/jackyzha0/quartz
-        Discord Community: https://discord.gg/cRFFHYye7t
+        GitHub: https://github.com/rwaterman
+        AI disclosure: /ai-disclosure
   - source: github:quartz-community/recent-notes
     enabled: false
   - source: github:quartz-community/spacer
