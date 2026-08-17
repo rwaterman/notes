@@ -14,8 +14,6 @@ configuration:
     - Unsorted
     - unsorted
     - .obsidian
-    - _clippings
-    - X/Clippings
   theme:
     fontOrigin: googleFonts
     cdnCaching: true

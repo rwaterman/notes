@@ -88,6 +88,18 @@ jobs:
           yq -i ".configuration.baseUrl = \"$SITE_HOST\"" quartz.config.yaml
           npx quartz build
 
+      # Quartz emits sitemap.xml but no robots.txt: block crawlers on dev, allow on prod.
+      - name: Write robots.txt
+        env:
+          SITE_HOST: ${{ steps.target.outputs.host }}
+          TARGET_NAME: ${{ steps.target.outputs.name }}
+        run: |
+          if [ "$TARGET_NAME" = "dev" ]; then
+            printf 'User-agent: *\nDisallow: /\n' > quartz/public/robots.txt
+          else
+            printf 'User-agent: *\nAllow: /\n\nSitemap: https://%s/sitemap.xml\n' "$SITE_HOST" > quartz/public/robots.txt
+          fi
+
       - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/notes-content-${{ steps.target.outputs.name }}
