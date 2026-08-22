@@ -1,23 +1,38 @@
-# Amazon Bedrock Overview
+---
+tags: [aws, bedrock, genai, certification, course]
+---
 
-- An API for generative AI Foundation Models
-	- Invoke chat text, or image models
-	- Pre-built, your own fine-tuned models, or your own models
-	- Support for RAG
-	- Support for LLM Agents
-- Serverless
+# AWS GenAI Certification Notes
 
-## Bedrock API Endpoints
+Study notes for AWS generative-AI material, centered on **Amazon Bedrock**.
 
-- bedrock: Manage, deploy, train models
-- bedrock-runtime: Perform inference (execute prompts, generate embeddings)
-	- Converse, ConverseStream, InvokeModel, InvokeModelWithResponseStream
-- bedrock-agent: Manage, deploy, train LLM agents and knowledge bases
-- bedrock-agent-runtime: Perform inference against agents and knowledge agents
-	- InvokeAgent, Retrieve, RetrieveAndGenerate
+## Amazon Bedrock Overview
+
+A serverless API for generative-AI **foundation models** — one interface to invoke text, chat, image, and embedding models.
+
+- Use **pre-built** models, **fine-tune** them on your data, or bring your own.
+- First-class support for **RAG** (Retrieval-Augmented Generation) and **agents**.
+- Serverless — no infrastructure to manage; pay per token / per request.
+
+## API Endpoints
+
+Bedrock splits management from inference across four endpoints:
+
+| Endpoint | Purpose | Key operations |
+|---|---|---|
+| `bedrock` | Manage, deploy, fine-tune models | model + provisioning management |
+| `bedrock-runtime` | **Inference** — run prompts, generate embeddings | `Converse`, `ConverseStream`, `InvokeModel`, `InvokeModelWithResponseStream` |
+| `bedrock-agent` | Manage agents & knowledge bases | agent/KB CRUD |
+| `bedrock-agent-runtime` | Inference **against** agents & KBs | `InvokeAgent`, `Retrieve`, `RetrieveAndGenerate` |
+
+> [!tip] Converse vs InvokeModel
+> Prefer the **Converse** API for chat — it normalizes the message format across model providers, so you can swap models without rewriting request/response shaping. `InvokeModel` is the lower-level, model-specific call.
 
 ## IAM
 
-- Can't use root user
-- AmazonBedrockFullAccess
-- AmazonBedrockReadOnly
+- The **root user cannot use Bedrock** — use an IAM principal.
+- Managed policies: `AmazonBedrockFullAccess` and `AmazonBedrockReadOnly`.
+- Model access must also be **explicitly enabled** per-model in the Bedrock console before invocation.
+
+> [!note] Related
+> See [[IAM]] for the permission model and [[GraphQL]]/[[Lambda]] for wiring Bedrock into an application backend.

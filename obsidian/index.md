@@ -26,6 +26,7 @@ Service references and operational snippets, serverless-first.
 - Integration — [[API Gateway]], [[SQS]], [[SNS]], [[EventBridge]]
 - Foundations — [[VPC]], [[IAM]], [[CloudFormation]], [[AWS CloudWatch]]
 - Delivery — [[Canary Deployments]]
+- Applications — [[Amazon Connect]]
 
 ### 🏛️ Software Architecture
 - [[Large Scale Systems]], [[Design Patterns]], [[DDIA Notes]]
@@ -42,16 +43,18 @@ Service references and operational snippets, serverless-first.
 - [[Postgres]], [[SQL Server]], [[Sequelize]]
 
 ### 💻 Programming
-- [[Python 3 Deep Dive]], [[Computer Science Algorithms]], [[GraphQL]]
+- [[Python 3 Deep Dive]], [[Computer Science Algorithms]], [[GraphQL]], [[Software Licensing]]
 - TypeScript — [[Create a TypeScript Project]], [[LRU Cache]], [[TypeScript Promise Helper]]
 
 ### ⌨️ CLI
 - Shells — [[Zsh]], [[Bash]]
-- Utilities — [[Git]], [[NodeJS]], [[Networking]], [[GPG]], [[FFmpeg]]
+- Utilities — [[Git]], [[NodeJS]], [[Networking]], [[GPG]], [[pass]], [[FFmpeg]]
 - [[SSH - Mac OS]], [[SSH - Snippets]]
 
 ### 🤖 AI
-- [[Prompt]], [[Latent Space Prompt]]
+- [[AI Map of Content]] — the full section index
+- Working with models — [[Context Engineering]], [[LLM CLI Tools]]
+- Prompting — [[Prompt]], [[Latent Space Prompt]]
 
 ## How this is organized
 
