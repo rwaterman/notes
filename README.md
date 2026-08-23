@@ -1,6 +1,6 @@
 # notes
 
-Source for [notes.rickgwaterman.com](https://notes.rickgwaterman.com) — Rick Waterman's
+Source for [notes.rickwaterman.com](https://notes.rickwaterman.com) — Rick Waterman's
 engineering knowledge base: terse, example-first reference notes on AWS, distributed
 systems, databases, DevOps tooling, security, and the command line.
 
@@ -94,7 +94,7 @@ flowchart LR
 The home region is `us-west-2`; everything that can live there does (bucket,
 distribution, roles, SSM). CloudFront requires its ACM certificate in `us-east-1`, so
 each environment gets a thin `NotesCert<Env>` stack there whose certificate is passed to the
-home-region site stack with CDK `crossRegionReferences`. DNS is the `rickgwaterman.com`
+home-region site stack with CDK `crossRegionReferences`. DNS is the `rickwaterman.com`
 hosted zone.
 
 | Stack | Region | Contents |
@@ -114,8 +114,8 @@ CDK bootstrap roles in both regions.
 
 | Env | Stack | Domain | Deploys from | Content role |
 | --- | --- | --- | --- | --- |
-| dev | `NotesSiteDev` | `notes-dev.rickgwaterman.com` | `develop` | `notes-content-dev` |
-| prod | `NotesSiteProd` | `notes.rickgwaterman.com` | `main` | `notes-content-prod` |
+| dev | `NotesSiteDev` | `notes-dev.rickwaterman.com` | `develop` | `notes-content-dev` |
+| prod | `NotesSiteProd` | `notes.rickwaterman.com` | `main` | `notes-content-prod` |
 
 Each environment stack creates: a private, encrypted S3 bucket (prod: `RETAIN`, dev:
 destroy + auto-empty); a CloudFront distribution with Origin Access Control, a

@@ -7,7 +7,7 @@ configuration:
   analytics:
     provider: plausible
   locale: en-US
-  baseUrl: notes.rickgwaterman.com
+  baseUrl: notes.rickwaterman.com
   ignorePatterns:
     - private
     - templates
