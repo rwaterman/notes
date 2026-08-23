@@ -18,30 +18,33 @@ configuration:
     fontOrigin: googleFonts
     cdnCaching: true
     typography:
-      header: Schibsted Grotesk
-      body: Source Sans Pro
-      code: IBM Plex Mono
+      header: Space Grotesk
+      body: Inter
+      code: JetBrains Mono
+    # Nord palette. The quartz-themes "nord" preset (mode: dark) owns the live
+    # look; these values keep the base layer coherent so nothing renders from an
+    # off-theme fallback. lightMode is Nord "Snow Storm", darkMode is "Polar Night".
     colors:
       lightMode:
-        light: "#faf8f8"
-        lightgray: "#e5e5e5"
-        gray: "#b8b8b8"
-        darkgray: "#4e4e4e"
-        dark: "#2b2b2b"
-        secondary: "#284b63"
-        tertiary: "#84a59d"
-        highlight: rgba(143, 159, 169, 0.15)
-        textHighlight: "#fff23688"
+        light: "#eceff4"
+        lightgray: "#d8dee9"
+        gray: "#9aa4b2"
+        darkgray: "#3b4252"
+        dark: "#2e3440"
+        secondary: "#5e81ac"
+        tertiary: "#81a1c1"
+        highlight: rgba(94, 129, 172, 0.10)
+        textHighlight: "#ebcb8b55"
       darkMode:
-        light: "#161618"
-        lightgray: "#393639"
-        gray: "#646464"
-        darkgray: "#d4d4d4"
-        dark: "#ebebec"
-        secondary: "#7b97aa"
-        tertiary: "#84a59d"
-        highlight: rgba(143, 159, 169, 0.15)
-        textHighlight: "#b3aa0288"
+        light: "#2e3440"
+        lightgray: "#3b4252"
+        gray: "#616e88"
+        darkgray: "#d8dee9"
+        dark: "#eceff4"
+        secondary: "#88c0d0"
+        tertiary: "#8fbcbb"
+        highlight: rgba(136, 192, 208, 0.12)
+        textHighlight: "#ebcb8b55"
 plugins:
   - source: github:quartz-community/created-modified-date
     enabled: true
@@ -57,7 +60,7 @@ plugins:
     options:
       theme:
         light: github-light
-        dark: github-dark
+        dark: nord
       keepBackground: false
     order: 20
   - source: github:quartz-community/obsidian-flavored-markdown
@@ -197,8 +200,10 @@ plugins:
     layout:
       position: left
       priority: 10
+  # Site is locked to dark via the quartz-themes preset (mode: dark), so the
+  # light/dark toggle is disabled — nothing to switch to.
   - source: github:quartz-community/darkmode
-    enabled: true
+    enabled: false
     layout:
       position: left
       priority: 30
@@ -266,7 +271,8 @@ plugins:
       subdir: plugin
     enabled: true
     options:
-      theme: default
+      theme: nord
+      mode: dark
   - source: github:quartz-community/obsidian-plugin-excalidraw
     enabled: true
     options:
