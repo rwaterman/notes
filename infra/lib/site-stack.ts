@@ -13,27 +13,23 @@ import { HOSTED_ZONE_ID, ZONE_NAME, GITHUB_REPO, SiteEnv } from './site-config';
 export interface SiteStackProps extends cdk.StackProps {
   site: SiteEnv;
   oidcProvider: iam.IOpenIdConnectProvider;
+  certificate: acm.ICertificate;
 }
 
 /**
  * One notes environment: private S3 bucket behind a CloudFront distribution (Origin
- * Access Control), an in-region ACM certificate, Route53 alias records, a
- * directory-index CloudFront Function, and a branch-scoped OIDC role for content deploys.
+ * Access Control), Route53 alias records, a directory-index CloudFront Function, and a
+ * branch-scoped OIDC role for content deploys.
  */
 export class SiteStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: SiteStackProps) {
     super(scope, id, props);
-    const { site, oidcProvider } = props;
+    const { site, oidcProvider, certificate } = props;
     const isProd = site.envName === 'prod';
 
     const zone = route53.HostedZone.fromHostedZoneAttributes(this, 'Zone', {
       hostedZoneId: HOSTED_ZONE_ID,
       zoneName: ZONE_NAME,
-    });
-
-    const certificate = new acm.Certificate(this, 'Certificate', {
-      domainName: site.domainName,
-      validation: acm.CertificateValidation.fromDns(zone),
     });
 
     const bucket = new s3.Bucket(this, 'SiteBucket', {
