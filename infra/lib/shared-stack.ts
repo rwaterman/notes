@@ -1,7 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import { ACCOUNT, REGION, GITHUB_REPO, OIDC_PROVIDER_ARN } from './site-config';
+import { ACCOUNT, REGION, EDGE_REGION, GITHUB_REPO, OIDC_PROVIDER_ARN } from './site-config';
 
 /**
  * Account-global pieces for notes CI:
@@ -36,7 +36,9 @@ export class SharedStack extends cdk.Stack {
     infraRole.addToPolicy(
       new iam.PolicyStatement({
         actions: ['sts:AssumeRole'],
-        resources: [`arn:aws:iam::${ACCOUNT}:role/cdk-hnb659fds-*-${ACCOUNT}-${REGION}`],
+        resources: [REGION, EDGE_REGION].map(
+          (region) => `arn:aws:iam::${ACCOUNT}:role/cdk-hnb659fds-*-${ACCOUNT}-${region}`,
+        ),
       }),
     );
 
