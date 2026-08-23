@@ -29,7 +29,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # Full history so the created-modified-date Quartz plugin derives each note's
           # dates from git history instead of stamping the checkout time on every page.
@@ -64,7 +64,7 @@ jobs:
               ;;
           esac
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: quartz/.node-version
           cache: npm
