@@ -43,6 +43,6 @@ export const SITE_ENVS: SiteEnv[] = [
     id: 'Prod',
     envName: 'prod',
     domainName: 'notes.rickgwaterman.com',
-    branch: 'develop',
+    branch: 'main',
   },
 ];
