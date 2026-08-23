@@ -22,8 +22,7 @@ export class SharedStack extends cdk.Stack {
     );
 
     // CI role for `cdk deploy`. It holds no service permissions of its own — it can only
-    // assume the CDK bootstrap roles (home + edge region), which carry the actual
-    // provisioning permissions.
+    // assume the CDK bootstrap roles, which carry the actual provisioning permissions.
     const infraRole = new iam.Role(this, 'InfraDeployRole', {
       roleName: 'notes-infra-deploy',
       description: 'GitHub Actions role to run cdk deploy for notes (assumes CDK bootstrap roles only)',

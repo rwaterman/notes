@@ -10,8 +10,6 @@ const edgeEnv = { account: ACCOUNT, region: EDGE_REGION };
 
 const shared = new SharedStack(app, 'NotesShared', { env });
 
-// Certificates must be in us-east-1; everything else lives in the home region.
-// crossRegionReferences lets the site stack consume the edge-region certificate ARN.
 for (const site of SITE_ENVS) {
   const cert = new CertStack(app, `NotesCert${site.id}`, {
     env: edgeEnv,

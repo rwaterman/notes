@@ -13,15 +13,13 @@ import { HOSTED_ZONE_ID, ZONE_NAME, GITHUB_REPO, SiteEnv } from './site-config';
 export interface SiteStackProps extends cdk.StackProps {
   site: SiteEnv;
   oidcProvider: iam.IOpenIdConnectProvider;
-  /** This environment's ACM certificate, owned by CertStack (us-east-1). */
   certificate: acm.ICertificate;
 }
 
 /**
  * One notes environment: private S3 bucket behind a CloudFront distribution (Origin
  * Access Control), Route53 alias records, a directory-index CloudFront Function, and a
- * branch-scoped OIDC role for content deploys. The ACM certificate is created in us-east-1
- * by CertStack and passed in via cross-region references.
+ * branch-scoped OIDC role for content deploys.
  */
 export class SiteStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: SiteStackProps) {
