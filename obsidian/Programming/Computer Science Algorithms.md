@@ -1,86 +1,18 @@
 ---
-tags: [programming, algorithms, data-structures, computer-science]
+tags: [programming, algorithms, data-structures, computer-science, snippet]
 ---
 
 # Computer Science Algorithms
 
-Working notes on data structures and the problem-solving loop — the mental models worth keeping for interviews and for reasoning about performance.
-
-> [!note] Source
-> *JavaScript Algorithms and Data Structures Masterclass* (Udemy), plus a personal implementation repo.
+Data-structure essentials for interviews and for reasoning about performance. Source: *JavaScript Algorithms and Data Structures Masterclass* (Udemy).
 
 ## Problem-Solving Loop
 
-A repeatable approach for coding problems (George Pólya, adapted):
-
-1. **Understand the problem** — restate it; know the inputs, outputs, and constraints before writing anything.
-2. **Explore concrete examples** — simple cases, then edge cases (empty, huge, invalid). They become test cases.
-3. **Break it down** — write the steps in plain comments first.
-4. **Solve or simplify** — solve the easy version, then generalize; a working brute force beats a broken clever solution.
-5. **Look back and refactor** — improve time/space, readability, and reuse once it works.
-
-## Stacks
-
-**LIFO** (Last In, First Out) — think a stack of plates.
-
-Used for: function call management (the call stack), undo/redo, browser history (the `history` object), and expression/bracket matching.
-
-- Array `push`/`pop` in JS isn't strictly O(1) (occasional resize/copy), but it's amortized O(1) and fine in practice. A singly-linked list gives guaranteed O(1) push/pop from the head.
-
-## Queues
-
-**FIFO** (First In, First Out) — think a line at a store.
-
-Used for: background job processing, resource upload/print queues, and **BFS** traversal.
-
-- A naive array `shift()` is O(n) (it re-indexes every element). For O(1) dequeue, track `front`/`back` pointers or use a linked list.
-
-## Trees
-
-Hierarchical, non-linear structures; all nodes point away from a single **root**.
-
-**Terminology**
-
-- **Root** — the top node.
-- **Child** — a node connected below another (away from the root).
-- **Parent** — the converse of a child.
-- **Leaf** — a node with no children.
-- **Edge** — a connection between two nodes.
-
-**Where trees show up:** the HTML DOM, file systems, JSON, network routing, decision trees in AI, and **ASTs** (a tree describing a program's syntax).
-
-### Binary Search Tree (BST)
-
-- Each node has at most two children.
-- Everything in the **left** subtree is less than the node; everything in the **right** subtree is greater.
-- **Balanced** BST: insert and search are O(log n).
-- **Not guaranteed** — a BST built from sorted input degrades to a linked list (O(n)). Self-balancing variants (AVL, red-black) restore O(log n).
-
-### Traversal
-
-**BFS (Breadth-First)** — level by level, left to right. Uses a **queue**. Good when the answer is near the root or you need the shortest path in an unweighted tree.
-
-**DFS (Depth-First)** — go deep before wide. Uses recursion (or an explicit **stack**). Three orders, differing only in *when the node itself is visited*:
-
-- **PreOrder** — node, then left, then right. (Copy/serialize a tree.)
-- **InOrder** — left, then node, then right. (On a BST this yields **sorted** order.)
-- **PostOrder** — left, then right, then node. (Delete/free a tree bottom-up.)
-
-## Heaps (Binary Heap)
-
-A complete binary tree kept compact (filled left to right) that maintains a heap invariant:
-
-- **Max-heap** — every parent ≥ its children (root is the max).
-- **Min-heap** — every parent ≤ its children (root is the min).
-- No ordering between left and right siblings — only the parent/child relationship matters.
-
-**Array storage** (no pointers needed — the shape is implicit):
-
-- Left child of index `n` → `2n + 1`
-- Right child of index `n` → `2n + 2`
-- Parent of index `n` → `Math.floor((n - 1) / 2)`
-
-Insert and extract-max/min are O(log n) (bubble up / sift down). This is the backbone of **priority queues** and heapsort.
+1. **Understand** — restate inputs, outputs, constraints.
+2. **Examples** — simple, then edge cases (empty, huge, invalid). They become the tests.
+3. **Break down** — steps as comments first.
+4. **Solve or simplify** — working brute force beats broken clever.
+5. **Refactor** — time/space, readability, reuse.
 
 ## Big-O Quick Reference
 
@@ -91,3 +23,106 @@ Insert and extract-max/min are O(log n) (bubble up / sift down). This is the bac
 | Balanced BST | — | O(log n) | O(log n) | O(log n) |
 | Binary Heap | O(1) peek | O(n) | O(log n) | O(log n) |
 | Hash Table | — | O(1) avg | O(1) avg | O(1) avg |
+
+## Stacks & Queues
+
+- **Stack** (LIFO): call stack, undo/redo, bracket matching, DFS. Array `push`/`pop` is amortized O(1).
+- **Queue** (FIFO): job processing, BFS. Array `shift()` is O(n) — use a head index or linked list for O(1) dequeue.
+
+## Trees
+
+- **BST**: left subtree < node < right subtree. Balanced → O(log n) search/insert; sorted input degrades to a linked list (O(n)) — AVL / red-black fix that.
+- **BFS** — level by level, uses a queue. Shortest path in unweighted trees.
+- **DFS** — recursion or explicit stack. Orders differ only in *when the node is visited*: **pre** (node, L, R — copy/serialize), **in** (L, node, R — sorted order on a BST), **post** (L, R, node — free bottom-up).
+
+## Binary Heap
+
+Complete binary tree, filled left to right, stored in an array — no pointers:
+
+- children of `i` → `2i + 1`, `2i + 2`; parent of `i` → `(i - 1) >> 1`
+- **Min-heap:** parent ≤ children; **max-heap:** parent ≥ children. Siblings unordered.
+- Insert: append, bubble up. Extract: swap root with last, sift down. Both O(log n). Backbone of priority queues and heapsort.
+
+## Snippets
+
+```typescript
+class MinHeap {
+  private a: number[] = [];
+  get size(): number { return this.a.length; }
+
+  push(v: number): void {
+    this.a.push(v);
+    for (let i = this.a.length - 1; i > 0; ) {
+      const p = (i - 1) >> 1;
+      if (this.a[p] <= this.a[i]) break;
+      [this.a[p], this.a[i]] = [this.a[i], this.a[p]];
+      i = p;
+    }
+  }
+
+  pop(): number | undefined {
+    if (this.a.length === 0) return undefined;
+    const top = this.a[0];
+    const last = this.a.pop()!;
+    if (this.a.length === 0) return top;
+    this.a[0] = last;
+    for (let i = 0; ; ) {
+      const l = 2 * i + 1, r = l + 1;
+      let m = i;
+      if (l < this.a.length && this.a[l] < this.a[m]) m = l;
+      if (r < this.a.length && this.a[r] < this.a[m]) m = r;
+      if (m === i) return top;
+      [this.a[m], this.a[i]] = [this.a[i], this.a[m]];
+      i = m;
+    }
+  }
+}
+```
+
+```typescript
+type TreeNode<T> = { value: T; left?: TreeNode<T>; right?: TreeNode<T> };
+
+function bfs<T>(root: TreeNode<T>): T[] {
+  const out: T[] = [];
+  const queue = [root];
+  for (let head = 0; head < queue.length; head++) { // head index, not shift()
+    const n = queue[head];
+    out.push(n.value);
+    if (n.left) queue.push(n.left);
+    if (n.right) queue.push(n.right);
+  }
+  return out;
+}
+
+function dfs<T>(n: TreeNode<T> | undefined, order: 'pre' | 'in' | 'post', out: T[] = []): T[] {
+  if (!n) return out;
+  if (order === 'pre') out.push(n.value);
+  dfs(n.left, order, out);
+  if (order === 'in') out.push(n.value);
+  dfs(n.right, order, out);
+  if (order === 'post') out.push(n.value);
+  return out;
+}
+```
+
+Check:
+
+```typescript
+import assert from 'node:assert/strict';
+
+const h = new MinHeap();
+[5, 3, 8, 1, 9, 2, 7].forEach((v) => h.push(v));
+const drained: number[] = [];
+for (let v = h.pop(); v !== undefined; v = h.pop()) drained.push(v);
+assert.deepEqual(drained, [1, 2, 3, 5, 7, 8, 9]);
+
+const bst: TreeNode<number> = {
+  value: 4,
+  left: { value: 2, left: { value: 1 }, right: { value: 3 } },
+  right: { value: 6, left: { value: 5 }, right: { value: 7 } },
+};
+assert.deepEqual(bfs(bst), [4, 2, 6, 1, 3, 5, 7]);
+assert.deepEqual(dfs(bst, 'pre'), [4, 2, 1, 3, 6, 5, 7]);
+assert.deepEqual(dfs(bst, 'in'), [1, 2, 3, 4, 5, 6, 7]);
+assert.deepEqual(dfs(bst, 'post'), [1, 3, 2, 5, 7, 6, 4]);
+```

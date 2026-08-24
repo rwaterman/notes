@@ -4,7 +4,7 @@ tags: [devops, terraform, iac]
 
 # Terraform
 
-Declarative, multi-cloud Infrastructure as Code (HashiCorp). You describe desired state in **HCL**; Terraform diffs it against real infrastructure and makes the minimal changes to converge.
+Declarative, multi-cloud IaC (HashiCorp). Describe desired state in **HCL**; Terraform diffs it against real infrastructure and converges.
 
 ## Core Workflow
 
@@ -19,35 +19,30 @@ terraform destroy   # tear everything down
 
 ## State
 
-- Terraform records what it manages in a **state file** — the source of truth for the diff.
-- Use a **remote backend** for teams: **S3 for state + DynamoDB for locking** (prevents concurrent applies).
-- Never edit state by hand; use `terraform state mv/rm` and `terraform import`.
-- State can hold **secrets in plaintext** — encrypt the backend, restrict access.
+- The **state file** is the source of truth for the diff. Never hand-edit; use `terraform state mv/rm` and `terraform import`.
+- State holds **secrets in plaintext** — encrypt the backend, restrict access.
+- Teams: remote backend on S3 with native locking (`use_lockfile`, Terraform ≥ 1.10). The DynamoDB lock table is legacy.
 
 ```hcl
 terraform {
   backend "s3" {
-    bucket         = "my-tf-state"
-    key            = "prod/app.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "tf-locks"
-    encrypt        = true
+    bucket       = "my-tf-state"
+    key          = "prod/app.tfstate"
+    region       = "us-west-2"
+    use_lockfile = true
+    encrypt      = true
   }
 }
 ```
 
 ## Building Blocks
 
-- **Providers** — plugins for a platform (AWS, GitHub, etc.).
-- **Resources** — things to create (`resource "aws_s3_bucket" "this" {}`).
-- **Data sources** — read existing/external values.
-- **Variables / outputs / locals** — inputs, exported values, computed helpers.
-- **Modules** — reusable, composable units; the unit of DRY and sharing.
-- **`for_each` / `count`** — create N resources; prefer `for_each` (stable keys) over `count`.
+- **Providers** — plugins for a platform (AWS, GitHub, …).
+- **Resources** (`resource "aws_s3_bucket" "this" {}`), **data sources** (read existing values).
+- **Variables / outputs / locals**; **modules** — the unit of reuse.
+- **`for_each` / `count`** — prefer `for_each` (stable keys) over `count`.
 - **`lifecycle`** — `prevent_destroy`, `create_before_destroy`, `ignore_changes`.
-
-## Workspaces & Environments
-- **Workspaces** isolate state for the same config (use sparingly). Many teams prefer **separate state per environment** (dir or backend key) for clarity.
+- **Workspaces** isolate state for one config; most teams prefer separate state per environment (directory or backend key).
 
 ## Debugging
 
@@ -56,4 +51,4 @@ TF_LOG=TRACE TF_LOG_PATH=tf-trace.log terraform plan -no-color
 ```
 
 > [!tip] Terraform vs CDK vs CloudFormation
-> Terraform: multi-cloud, explicit state, vast provider ecosystem. [[AWS CDK]]: real code + abstractions, AWS-first. [[CloudFormation]]: AWS-native, no state to host. Match the team and cloud breadth.
+> Terraform: multi-cloud, explicit state, vast provider ecosystem. [[AWS CDK]]: real code + abstractions, AWS-first. [[CloudFormation]]: AWS-native, no state to host.

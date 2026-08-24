@@ -4,39 +4,53 @@ tags: [aws, cloudwatch, observability, snippet]
 
 # CloudWatch
 
-AWS-native observability: **metrics**, **logs**, **alarms**, **dashboards**, and synthetic checks. The default destination for everything AWS emits.
+AWS-native **metrics**, **logs**, **alarms**, and **dashboards**. Default sink for everything AWS emits.
 
 ## Metrics
 
-- Organized by **namespace** (e.g. `AWS/Lambda`) with **dimensions** (e.g. `FunctionName`).
-- Standard resolution = 1 min; **high-resolution** custom metrics down to 1 s.
-- Publish custom metrics via `PutMetricData` or, cheaper at scale, **Embedded Metric Format (EMF)** in logs.
-- Retention is rolled up over time (1-min data kept 15 days, then aggregated).
+- **Namespace** (`AWS/Lambda`) + **dimensions** (`FunctionName`). Standard resolution 1 min; high-resolution custom metrics down to 1 s.
+- Custom metrics: `PutMetricData`, or **Embedded Metric Format (EMF)** in logs — cheaper at scale.
+- Retention rolls up: 1-min data kept 15 days, then aggregated.
 
 ## Logs
 
-- **Log groups** → **log streams**; set **retention** per group (default: never expire — always set one).
-- **Metric filters** turn log patterns into metrics (then alarm on them).
-- **Subscription filters** stream logs to Lambda / Firehose / Kinesis in near-real-time.
-- **Logs Insights** — purpose-built query language over log groups.
+- **Log group** → **log streams**. Default retention is *never expire* — always set one.
+- **Metric filters** turn log patterns into metrics; alarm on those.
+- **Subscription filters** stream to Lambda / Firehose / Kinesis.
+- **Logs Insights** — query language over log groups.
 
 ## Alarms
 
-- States: `OK`, `ALARM`, `INSUFFICIENT_DATA`.
-- Actions → SNS notification, Auto Scaling, or EC2 action.
-- **Composite alarms** combine multiple alarms with AND/OR to cut noise.
-- Anomaly-detection alarms learn a band instead of a static threshold.
+- States: `OK`, `ALARM`, `INSUFFICIENT_DATA`. Actions: SNS, Auto Scaling, EC2.
+- **Composite alarms** AND/OR several alarms to cut noise. **Anomaly detection** alarms learn a band instead of a static threshold.
 
-## Dashboards & More
+## Snippets
 
-- **Dashboards** — cross-region, cross-account metric/log widgets.
-- **Synthetics canaries** — scripted checks of endpoints/flows.
-- **Lambda / Container Insights** — curated per-service performance views.
-- **ServiceLens** ties metrics, logs, and **X-Ray** traces together.
+```bash
+# Tail a log group live
+aws logs tail /aws/lambda/my-fn --follow --since 10m
 
-## Logs Insights — Copypasta
+# Log groups with no retention set
+aws logs describe-log-groups \
+  --query 'logGroups[?!retentionInDays].logGroupName' --output text
 
-Find 5xx HTTP status codes behind an API Gateway path:
+# ...then set one on each
+aws logs describe-log-groups \
+  --query 'logGroups[?!retentionInDays].logGroupName' --output text \
+  | xargs -n1 -I{} aws logs put-retention-policy --log-group-name {} --retention-in-days 30
+```
+
+```bash
+# Metric statistics for the previous full hour (BSD date — macOS; Linux: date -u -d '2 hours ago')
+aws cloudwatch get-metric-statistics \
+  --namespace AWS/Lambda --metric-name ConcurrentExecutions \
+  --dimensions Name=FunctionName,Value=my-fn \
+  --statistics Sum --period 3600 \
+  --start-time "$(date -u -v-2H +%Y-%m-%dT%H:%M:%SZ)" \
+  --end-time   "$(date -u -v-1H +%Y-%m-%dT%H:%M:%SZ)"
+```
+
+Logs Insights — 5xx responses behind an API Gateway path:
 
 ```
 fields @timestamp, @message, @logStream, @log
@@ -45,26 +59,4 @@ fields @timestamp, @message, @logStream, @log
 | filter status like /^5\d\d$/
 | sort @timestamp desc
 | limit 10000
-```
-
-## Metrics — CLI
-
-```bash
-aws cloudwatch get-metric-statistics \
-  --namespace "AWS/Lambda" \
-  --metric-name "ConcurrentExecutions" \
-  --dimensions Name=FunctionName,Value=some-lambda-name \
-  --statistics Sum \
-  --start-time $(date -u --date='2 hours ago' +%Y-%m-%dT%H:%M:%SZ) \
-  --end-time   $(date -u --date='1 hours ago' +%Y-%m-%dT%H:%M:%SZ) \
-  --period 3600 \
-  --region us-east-1
-```
-
-> [!warning] macOS note
-> `date --date=` above is GNU coreutils. On stock macOS use BSD `date`: `date -u -v-2H +%Y-%m-%dT%H:%M:%SZ`.
-
-```bash
-# Tail a log group live (great for debugging Lambda)
-aws logs tail /aws/lambda/my-fn --follow --since 10m
 ```

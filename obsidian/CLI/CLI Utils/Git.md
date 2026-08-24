@@ -4,63 +4,42 @@ tags: [git, cli, snippet]
 
 # Git
 
-## Releases
+## Everyday
 
 ```bash
-npm version <package-version> --no-git-tag-version
+git commit --amend                    # fix the last commit (message or staged changes)
+git rebase -i HEAD~5                  # squash / reorder / fixup
+git switch -c feature/x               # move uncommitted work to a new branch
+git log -S "needle" --oneline         # which commit introduced/removed a string
+git bisect start && git bisect bad && git bisect good <sha>
+git revert <sha>                      # undo a pushed commit with an inverse commit
+git restore <path>                    # discard local changes to a file
+git fetch --prune                     # drop stale remote-tracking branches
+```
+
+## Tag a Package Release
+
+```bash
+npm version <version> --no-git-tag-version
 git config --global push.followTags true
-git add -A
-git commit -m "chore (<org_name>/<package_name>): v<package-version> (tag: <package_name>_<package-version>)"
-git tag <package-version>
-git push origin <branch_name> <package-version>
+git add package.json package-lock.json
+git commit -m "chore(<package>): v<version>"
+git tag v<version>
+git push origin <branch> v<version>
 ```
 
-## Repository Stats & Audit
-
-Commits per developer over a period:
+## Repository Stats
 
 ```bash
+# Commits per author since a date
 git shortlog -sn --no-merges --since "01 January 2025"
-```
 
-Lines-of-code churn for one author:
-
-```bash
+# Churn for one author
 git log --shortstat --no-merges --author="Rick Waterman" \
   | grep -E "fil(e|es) changed" \
-  | awk '{files+=$1; inserted+=$4; deleted+=$6; delta+=$4-$6; ratio=deleted/inserted}
-         END {printf "Commit stats:\n- Files changed (total).. %s\n- Lines added (total).... %s\n- Lines deleted (total).. %s\n- Total lines (delta).... %s\n- Add./Del. ratio (1:n).. 1 : %s\n", files, inserted, deleted, delta, ratio }' -
+  | awk '{files+=$1; inserted+=$4; deleted+=$6}
+         END {printf "files %s, +%s -%s, delta %s, del/add 1:%.2f\n",
+              files, inserted, deleted, inserted-deleted, (inserted ? deleted/inserted : 0)}'
 ```
 
-> [!warning] LOC is a terrible productivity metric
-> Use churn for *codebase health* (refactor pressure, hotspots), not to rank people. See GitClear's "four worst software metrics."
-
-**Tools:** [Gource](https://github.com/acaudwell/Gource) (repo history visualization) · [GitClear](https://www.gitclear.com/) (diff-aware stats, paid).
-
-## Everyday Snippets
-
-```bash
-# Amend the last commit (message or staged changes)
-git commit --amend
-
-# Interactive history surgery (squash/reorder/fixup)
-git rebase -i HEAD~5
-
-# Move uncommitted work to a new branch
-git switch -c feature/x
-
-# Find which commit introduced a line
-git log -S "needle" --oneline
-
-# Bisect to a regression
-git bisect start && git bisect bad && git bisect good <sha>
-
-# Undo a pushed commit safely (new inverse commit)
-git revert <sha>
-
-# Discard local changes to a file
-git restore <path>
-
-# Prune stale remote-tracking branches
-git fetch --prune
-```
+Churn is a codebase-health signal (hotspots, refactor pressure), not a productivity metric. [Gource](https://github.com/acaudwell/Gource) visualizes history; [GitClear](https://www.gitclear.com/) does diff-aware stats.
