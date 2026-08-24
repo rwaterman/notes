@@ -28,8 +28,7 @@ Folders ignored at build time (`ignorePatterns` in `quartz.config.yaml`): `priva
 `templates`, `Unsorted`, `.obsidian`. Drop half-finished notes in `Unsorted/` and they
 stay out of the published site.
 
-Third-party clippings live in `obsidian/_clippings/` and are marked as such at the top
-of the page; `obsidian/ai-disclosure.md` describes how AI tools are used.
+`obsidian/ai-disclosure.md` describes how AI tools are used.
 
 ## Develop
 
@@ -37,11 +36,13 @@ of the page; `obsidian/ai-disclosure.md` describes how AI tools are used.
 cd quartz
 npm ci
 npx quartz plugin install   # fetches github:quartz-community/* plugins into .quartz/plugins
-npx quartz build --serve    # http://localhost:8080, rebuilds on change
+npx quartz build --serve -d ../obsidian   # http://localhost:8080, rebuilds on change
 ```
 
 `quartz/content` is a symlink to `../obsidian`, so the vault is the single source of
-truth and Quartz reads it in place.
+truth and Quartz reads it in place. Build with `-d ../obsidian` rather than through the
+symlink: the created-modified-date plugin resolves git history by path, and
+`content/...` is not a tracked path, so every note would get the checkout time.
 
 ## Layout
 
@@ -50,11 +51,12 @@ truth and Quartz reads it in place.
 obsidian/                 the vault — published content
   index.md                home page / map of content
   AWS/ AI/ CLI/ Databases/ DevOps/ Operating Systems/ Programming/
-  Security/ Software Architecture/ Sources/ _clippings/ Unsorted/
+  Security/ Software Architecture/ Sources/ Unsorted/
 quartz/                   Quartz v5 (vendored upstream + config)
   content -> ../obsidian
   quartz.config.yaml      site config, theme, plugin list
   quartz.lock.json        pinned plugin versions
+  plugins/search-shortcut local component plugin: "/" opens search (hand-written dist/, no build)
   public/                 build output (gitignored)
 infra/                    AWS CDK app (TypeScript)
   bin/
@@ -140,7 +142,7 @@ Both workflows use OIDC (`id-token: write`) and the repo secrets `AWS_ACCOUNT_ID
   `workflow_dispatch` with an `env` choice. Checks out full history (`fetch-depth: 0`,
   so created/modified dates come from git), restores the plugin cache (keyed on
   `quartz.lock.json`), runs `npm ci` + `quartz plugin install`, sets `baseUrl` with `yq`,
-  runs `quartz build`, writes `robots.txt` (`Disallow: /` on dev, `Allow: /` + sitemap on
+  runs `quartz build -d ../obsidian`, writes `robots.txt` (`Disallow: /` on dev, `Allow: /` + sitemap on
   prod), assumes `notes-content-<env>`, syncs `quartz/public/` to S3 with
   `must-revalidate` cache headers, then invalidates `/*`.
 - **`infra.yml`** — on push to `develop` touching `infra/**`. Assumes

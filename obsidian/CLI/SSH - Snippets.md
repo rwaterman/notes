@@ -2,32 +2,36 @@
 tags: [ssh, security, snippet]
 ---
 
-# Create an SSH Key (ED25519)
+# SSH Snippets
+
+## Keys
 
 ```bash
-ssh-keygen -o -a 100 -t ed25519 -f ~/.ssh/id_ed25519 -C "$(whoami)@$(hostname)"
+# ED25519 (default choice); -a 100 = KDF rounds protecting the private key
+ssh-keygen -a 100 -t ed25519 -f ~/.ssh/id_ed25519 -C "$(whoami)@$(hostname)"
+
+# RSA 4096 when the target can't do ed25519
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -C "name@host-or-email"
+
+# Install a public key on a remote host
+ssh-copy-id -i ~/.ssh/id_ed25519.pub user@remote_host
 ```
 
-# Create an SSH Key (RSA)
+## Tunnel
 
 ```sh
-ssh-keygen -t rsa -b 4096 -C "name@host-or-email"
+# Local :5433 → db.internal:5432 via bastion; -N = no shell
+ssh -N -L 5433:db.internal:5432 user@bastion [-i ~/.ssh/some_key]
 ```
 
-# Copy SSH Public Key to Remote Host
+## Convert an RSA key to PEM (AWS, older tooling)
 
-```bash
-ssh-copy-id -i ~/.ssh/your_custom_key.pub username@remote_host
-```
-
-# Create an SSH Tunnel
+Modern `ssh-keygen` writes `-----BEGIN OPENSSH PRIVATE KEY-----`, which `openssl rsa` cannot read. Convert in place (copy first if you want to keep the original):
 
 ```sh
-ssh -Nv -L target_port:endpoint:source_port user@host [-i ~/.ssh/some_ssh_key.xxx]
+cp ~/.ssh/id_rsa ~/.ssh/id_rsa.pem
+ssh-keygen -p -m PEM -f ~/.ssh/id_rsa.pem     # prompts for old/new passphrase
+head -1 ~/.ssh/id_rsa.pem                      # -----BEGIN RSA PRIVATE KEY-----
 ```
 
-# Convert an id_rsa Key (PKCS#1 and PKCS#8) to an AWS-compatible PEM Key
-
-```sh
-openssl rsa -in ~/.ssh/id_rsa -outform pem > newfile.pem
-```
+Harden the server side in [[SSH - Mac OS]].

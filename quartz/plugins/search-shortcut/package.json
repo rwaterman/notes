@@ -1,0 +1,21 @@
+{
+  "name": "search-shortcut",
+  "version": "1.0.0",
+  "description": "Press / to open Quartz search.",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./dist/index.js",
+    "./components": "./dist/components/index.js"
+  },
+  "quartz": {
+    "name": "search-shortcut",
+    "displayName": "Search Shortcut",
+    "category": "component",
+    "components": {
+      "SearchShortcut": {
+        "displayName": "Search Shortcut"
+      }
+    }
+  }
+}

@@ -113,8 +113,16 @@ plugins:
   - source: github:quartz-community/roam
     enabled: false
     order: 92
+  # Fonts does not read theme.typography; without options it emits Quartz's defaults
+  # (Schibsted Grotesk / Source Sans Pro / IBM Plex Mono) over the configured fonts.
+  # fontOrigin: local because theme.fontOrigin already loads these from Google Fonts.
   - source: github:quartz-community/fonts
     enabled: true
+    options:
+      header: '"Space Grotesk", system-ui, sans-serif'
+      body: '"Inter", system-ui, sans-serif'
+      code: '"JetBrains Mono", ui-monospace, monospace'
+      fontOrigin: local
   - source: github:quartz-community/remove-draft
     enabled: true
   - source: github:quartz-community/explicit-publish
@@ -175,6 +183,9 @@ plugins:
       group: toolbar
       groupOptions:
         grow: true
+  # Local plugin: binds "/" to open search (the search plugin only binds Cmd/Ctrl+K).
+  - source: ./plugins/search-shortcut
+    enabled: true
   - source: github:quartz-community/backlinks
     enabled: true
     layout:
