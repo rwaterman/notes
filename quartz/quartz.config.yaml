@@ -175,6 +175,9 @@ plugins:
       group: toolbar
       groupOptions:
         grow: true
+  # Local plugin: binds "/" to open search (the search plugin only binds Cmd/Ctrl+K).
+  - source: ./plugins/search-shortcut
+    enabled: true
   - source: github:quartz-community/backlinks
     enabled: true
     layout:

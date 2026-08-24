@@ -54,6 +54,7 @@ quartz/                   Quartz v5 (vendored upstream + config)
   content -> ../obsidian
   quartz.config.yaml      site config, theme, plugin list
   quartz.lock.json        pinned plugin versions
+  plugins/search-shortcut local component plugin: "/" opens search (hand-written dist/, no build)
   public/                 build output (gitignored)
 infra/                    AWS CDK app (TypeScript)
   bin/
