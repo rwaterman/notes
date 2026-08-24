@@ -88,7 +88,9 @@ jobs:
           npm ci
           npx quartz plugin install
           yq -i ".configuration.baseUrl = \"$SITE_HOST\"" quartz.config.yaml
-          npx quartz build
+          # Build from the real vault path, not the content symlink: through the symlink
+          # every note looks untracked to git and gets the checkout time as its date.
+          npx quartz build -d ../obsidian
 
       # Quartz emits sitemap.xml but no robots.txt: block crawlers on dev, allow on prod.
       - name: Write robots.txt

@@ -1,3 +1,14 @@
 @use "./variables.scss" as *;
 
 // put your custom CSS here!
+
+// quartz-themes recolors shiki tokens through Obsidian --code-* vars, which flattens
+// the Nord highlighting the syntax-highlighting plugin already renders. Its rule
+// (figure[data-rehype-pretty-code-figure] pre > code span[data-token-type=...]) ends up
+// unlayered and more specific than anything reasonable here, hence !important.
+[saved-theme="dark"] pre > code span[data-token-type] {
+  color: var(--shiki-dark) !important;
+}
+[saved-theme="light"] pre > code span[data-token-type] {
+  color: var(--shiki-light) !important;
+}
