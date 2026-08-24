@@ -5,10 +5,7 @@ description: Engineering knowledge base — cloud architecture, AWS, distributed
 
 # Engineering Knowledge Base
 
-Working reference for building and operating cloud systems: AWS services, distributed-systems design, DevOps tooling, databases, and the command line. Notes are written to be re-read under pressure — terse, example-first, and biased toward what actually matters in production.
-
-> [!tip] Finding things
-> Use **search** (top-left, or press `/`) for the fastest path. Otherwise browse by section in the explorer, or follow the maps below.
+Working reference for building and operating cloud systems: AWS, distributed-systems design, DevOps tooling, databases, and the command line. Terse, snippet-first, tested where a snippet can be run. Press `/` to search.
 
 ## Start here
 
@@ -56,6 +53,6 @@ Service references and operational snippets, serverless-first.
 - Working with models — [[Context Engineering]], [[LLM CLI Tools]]
 - Prompting — [[Prompt]], [[Latent Space Prompt]]
 
-## How this is organized
-
-Each page is a standalone reference: a short orientation, then the specifics, then snippets you can copy. Pages link to related topics with `[[wikilinks]]` — follow the **graph** (top-right) or **backlinks** to explore laterally. Anything tagged `#snippet` is copy-paste-ready.
+### 🖥️ Operating Systems
+- macOS — [[Using brew in a multi-user system]], [[Mac OS - Spotlight]]
+- Linux — [[Linux Setup]]

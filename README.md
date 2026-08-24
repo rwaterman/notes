@@ -28,8 +28,7 @@ Folders ignored at build time (`ignorePatterns` in `quartz.config.yaml`): `priva
 `templates`, `Unsorted`, `.obsidian`. Drop half-finished notes in `Unsorted/` and they
 stay out of the published site.
 
-Third-party clippings live in `obsidian/_clippings/` and are marked as such at the top
-of the page; `obsidian/ai-disclosure.md` describes how AI tools are used.
+`obsidian/ai-disclosure.md` describes how AI tools are used.
 
 ## Develop
 
@@ -50,7 +49,7 @@ truth and Quartz reads it in place.
 obsidian/                 the vault — published content
   index.md                home page / map of content
   AWS/ AI/ CLI/ Databases/ DevOps/ Operating Systems/ Programming/
-  Security/ Software Architecture/ Sources/ _clippings/ Unsorted/
+  Security/ Software Architecture/ Sources/ Unsorted/
 quartz/                   Quartz v5 (vendored upstream + config)
   content -> ../obsidian
   quartz.config.yaml      site config, theme, plugin list
