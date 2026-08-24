@@ -12,3 +12,14 @@
 [saved-theme="light"] pre > code span[data-token-type] {
   color: var(--shiki-light) !important;
 }
+
+// quartz-themes' Nord CSS defines Obsidian's --highlight (an opaque frost1 text
+// highlight) on :root, which collides with Quartz's --highlight (the translucent
+// tint behind a.internal). Result: tag chips and inline links at ~1:1 contrast.
+// Restore Quartz's values; this file is unlayered so it wins over @layer obsidian-theme.
+[saved-theme="dark"] {
+  --highlight: rgba(136, 192, 208, 0.12);
+}
+[saved-theme="light"] {
+  --highlight: rgba(94, 129, 172, 0.1);
+}
