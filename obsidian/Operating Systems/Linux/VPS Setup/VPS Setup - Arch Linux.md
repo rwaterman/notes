@@ -14,7 +14,7 @@ First hour on a fresh Arch Linux server: full upgrade, create an admin user, loc
 Run as `root` on first login. Arch is a rolling release: always upgrade the whole system with `pacman -Syu`. Installing with `pacman -Sy <package>` on a stale system is a partial upgrade and breaks shared libraries.
 
 ```sh
-pacman -Syu --needed sudo openssh
+pacman -Syu --needed sudo openssh rsync
 timedatectl set-timezone UTC
 timedatectl set-ntp true
 hostnamectl set-hostname web-1
@@ -41,7 +41,7 @@ ssh alice@203.0.113.10
 sudo -v
 ```
 
-Some providers' images create an `arch` user through cloud-init instead of enabling root. Use that account for the steps above, with `sudo`.
+Some providers' images create an `arch` user through cloud-init instead of enabling root. Log in as that account and run `sudo -i` to get a root shell, then follow sections 1 and 2 as written.
 
 ## 3. Harden SSH
 
@@ -92,7 +92,7 @@ Log in from a new terminal before closing the old one.
 
 - **Not the Ubuntu file.** The Ubuntu page adds `DebianBanner no`. That option exists only in Debian's patched OpenSSH; on Arch it is a syntax error and `sshd` refuses to start.
 - **Port forwarding stays on.** DigitalOcean's guide also sets `AllowTcpForwarding no`. Add it on a server that only serves traffic; leave it out if you use `ssh -L` tunnels ([[SSH - Snippets]]) or an editor's remote mode.
-- **Changing the port.** Add `Port 2222` to the drop-in and run `sudo systemctl restart sshd`. Open the new port in the firewall first. Moving off port 22 only reduces log noise.
+- **Changing the port.** Add `Port 2222` to the drop-in and run `sudo systemctl restart sshd`. Every firewall command in the sections below then needs `2222/tcp` in place of `22/tcp`, including the rules that remove and restore public SSH in the Tailscale section; otherwise enabling the firewall blocks the new port. Moving off port 22 only reduces log noise.
 - **Allowlisting by address.** `AllowUsers alice@203.0.113.0/24` restricts a user to a source range. Use it only with a static address, otherwise prefer the Tailscale step below.
 - **Per-key limits.** Prefix a line in `~/.ssh/authorized_keys` with `restrict` (or `restrict,pty`) to strip forwarding and other features from that one key, which suits deploy and backup keys.
 
@@ -192,7 +192,7 @@ sudo pacman -S --needed ripgrep fd bat fzf jq go-yq eza zoxide git-delta tree nc
 sudo pacman -S --needed strace lsof bind mtr tcpdump
 
 # Development
-sudo pacman -S --needed github-cli shellcheck shfmt just direnv stow sqlite uv nodejs npm
+sudo pacman -S --needed github-cli shellcheck shfmt just direnv stow sqlite uv
 
 # Security audit
 sudo pacman -S --needed lynis ssh-audit
@@ -212,6 +212,31 @@ Notes:
   ```
 
   AUR packages are user-submitted build scripts. Read the `PKGBUILD` before installing one on a server.
+
+### Language runtimes: nvm and pyenv
+
+Install Node.js and Python per user through version managers, so projects can pin a version and a rolling system upgrade does not change the interpreter underneath them. Both managers are in the official repositories.
+
+```sh
+sudo pacman -S --needed nvm pyenv base-devel openssl zlib xz tk zstd
+```
+
+Add the loaders to `~/.zshrc`, or to `~/.bashrc` with `bash` in place of `zsh` on the last line:
+
+```sh
+source /usr/share/nvm/init-nvm.sh
+export PYENV_ROOT="$HOME/.pyenv"
+eval "$(pyenv init - zsh)"
+```
+
+Then open a new shell and install the runtimes as your own user, not root:
+
+```sh
+nvm install --lts
+pyenv install 3.14            # newest 3.14.x; compiles from source, takes a few minutes
+pyenv global 3.14
+python --version && node --version
+```
 
 ## 8. Verify
 

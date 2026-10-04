@@ -90,7 +90,7 @@ sudo sshd -T | grep -iE '^(permitrootlogin|passwordauthentication|allowusers|x11
 Log in from a new terminal before closing the old one.
 
 - **Port forwarding stays on.** DigitalOcean's guide also sets `AllowTcpForwarding no`. Add it on a server that only serves traffic; leave it out if you use `ssh -L` tunnels ([[SSH - Snippets]]) or an editor's remote mode.
-- **Changing the port.** Ubuntu starts `sshd` through socket activation, so a `Port` or `ListenAddress` change needs `sudo systemctl daemon-reload && sudo systemctl restart ssh.socket`; a plain reload does not move the listener. Moving off port 22 only reduces log noise.
+- **Changing the port.** Ubuntu starts `sshd` through socket activation, so a `Port` or `ListenAddress` change needs `sudo systemctl daemon-reload && sudo systemctl restart ssh.socket`; a plain reload does not move the listener. Every firewall command in the sections below then needs the new port (for example `2222/tcp`) in place of `OpenSSH`, including the rules that remove and restore public SSH in the Tailscale section; the `OpenSSH` profile only covers port 22, so enabling the firewall would otherwise block the new port. Moving off port 22 only reduces log noise.
 - **Allowlisting by address.** `AllowUsers alice@203.0.113.0/24` restricts a user to a source range. Use it only with a static address, otherwise prefer the Tailscale step below.
 - **Per-key limits.** Prefix a line in `~/.ssh/authorized_keys` with `restrict` (or `restrict,pty`) to strip forwarding and other features from that one key, which suits deploy and backup keys.
 
@@ -204,9 +204,43 @@ Things that differ from other distributions:
 
 - **`uv` is not packaged.** Install it per user: `curl -LsSf https://astral.sh/uv/install.sh | sh`.
 - **`yq` is a different tool.** The `yq` package is the Python wrapper around `jq`. For the Go `yq` that most scripts expect, use `sudo snap install yq`.
-- **Node.js** in the archive is 22.x. Use NodeSource or a version manager when a project needs a newer release.
 - **Docker.** `sudo apt install -y docker.io docker-buildx docker-compose-v2`. Membership of the `docker` group is equivalent to root, so add users deliberately. Read the Docker warning in the firewall section first.
 - **AWS CLI.** `sudo apt install -y awscli` installs version 2.
+
+### Language runtimes: nvm and pyenv
+
+Install Node.js and Python per user through version managers, so projects can pin a version and the system copies stay untouched. `nvm` is not in the 26.04 archive and the packaged `pyenv` is too old to track current releases, so both come from their upstream installers. Run these as your own user, not root.
+
+```sh
+# Node.js through nvm; the installer adds its loader to your shell profile
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash
+exec "$SHELL"
+nvm install --lts
+
+# Libraries pyenv needs to compile Python
+sudo apt install -y build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
+  libsqlite3-dev libncurses-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev \
+  liblzma-dev libzstd-dev
+
+# Python 3.14 through pyenv
+curl -fsSL https://pyenv.run | bash
+```
+
+Add the pyenv loader to `~/.zshrc`, or to `~/.bashrc` with `bash` in place of `zsh` on the last line:
+
+```sh
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init - zsh)"
+```
+
+Then open a new shell and build the interpreter:
+
+```sh
+pyenv install 3.14            # newest 3.14.x; compiles from source, takes a few minutes
+pyenv global 3.14
+python --version && node --version
+```
 
 ## 8. Verify
 
