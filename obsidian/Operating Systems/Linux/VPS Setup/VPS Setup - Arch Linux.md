@@ -29,7 +29,7 @@ Create the user, grant `sudo` through the `wheel` group, and copy root's key acr
 
 ```sh
 useradd -m -G wheel alice && passwd alice
-echo '%wheel ALL=(ALL:ALL) ALL' > /etc/sudoers.d/10-wheel
+echo '%wheel ALL=(ALL:ALL) ALL' | sudo tee /etc/sudoers.d/10-wheel > /dev/null
 chmod 440 /etc/sudoers.d/10-wheel && visudo -c
 rsync --archive --chown=alice:alice ~/.ssh /home/alice/
 ```
