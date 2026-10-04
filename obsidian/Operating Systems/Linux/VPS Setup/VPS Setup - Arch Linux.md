@@ -25,7 +25,7 @@ Reboot after every kernel upgrade. The modules for the running kernel are remove
 
 ## 2. Admin user
 
-Create the user, grant `sudo` through the `wheel` group, and copy root's key across. The commands are explained in [[Linux Setup]].
+Create the user, grant `sudo` through the `wheel` group, and copy root's key across. See also [[Linux Setup]].
 
 ```sh
 useradd -m -G wheel alice && passwd alice
