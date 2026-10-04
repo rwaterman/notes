@@ -56,3 +56,4 @@ Service references and operational snippets, serverless-first.
 ### 🖥️ Operating Systems
 - macOS — [[Using brew in a multi-user system]], [[Mac OS - Spotlight]]
 - Linux — [[Linux Setup]]
+- VPS setup — [[VPS Setup - Ubuntu|Ubuntu 26.04]], [[VPS Setup - Arch Linux|Arch Linux]]
