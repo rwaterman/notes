@@ -6,6 +6,8 @@ tags: [linux, setup, sysadmin, snippet]
 
 First-boot: admin user + SSH key, then harden `sshd` ([[SSH - Snippets]], [[SSH - Mac OS]]).
 
+Full server walkthroughs (SSH hardening, firewall, Tailscale, recommended programs): [[VPS Setup - Ubuntu]] and [[VPS Setup - Arch Linux]].
+
 ## Arch
 
 ```bash
