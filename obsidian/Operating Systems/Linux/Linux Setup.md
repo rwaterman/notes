@@ -8,6 +8,8 @@ First-boot: admin user + SSH key, then harden `sshd` ([[SSH - Snippets]], [[SSH 
 
 Full server walkthroughs (SSH hardening, firewall, Tailscale, recommended programs): [[VPS Setup - Ubuntu]] and [[VPS Setup - Arch Linux]].
 
+Local desktop VM on an Apple Silicon Mac, from ISO to KDE Plasma over Tailscale: [[VM Setup - Arch Linux on Parallels]].
+
 ## Arch
 
 ```bash
