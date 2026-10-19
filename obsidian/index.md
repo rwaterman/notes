@@ -57,3 +57,4 @@ Service references and operational snippets, serverless-first.
 - macOS — [[Using brew in a multi-user system]], [[Mac OS - Spotlight]]
 - Linux — [[Linux Setup]]
 - VPS setup — [[VPS Setup - Ubuntu|Ubuntu 26.04]], [[VPS Setup - Arch Linux|Arch Linux]]
+- Local VM — [[VM Setup - Arch Linux on Parallels|Arch Linux ARM on Parallels]]
