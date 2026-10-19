@@ -12,6 +12,10 @@ updates:
       npm-security:
         applies-to: security-updates
         patterns: ["*"]
+    ignore:
+      # @quartz-community/utils wants preact ^10 as a peer; a major bump breaks the build.
+      - dependency-name: preact
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: docker
     directory: "/quartz"
     schedule:

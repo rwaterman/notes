@@ -21,7 +21,7 @@ configuration:
       header: Space Grotesk
       body: Inter
       code: JetBrains Mono
-    # Nord palette. The quartz-themes "nord" preset (mode: dark) owns the live
+    # Nord palette. The quartz-themes "nord" preset (mode: both) owns the live
     # look; these values keep the base layer coherent so nothing renders from an
     # off-theme fallback. lightMode is Nord "Snow Storm", darkMode is "Polar Night".
     colors:
@@ -211,10 +211,10 @@ plugins:
     layout:
       position: left
       priority: 10
-  # Site is locked to dark via the quartz-themes preset (mode: dark), so the
-  # light/dark toggle is disabled — nothing to switch to.
+  # Follows prefers-color-scheme on first visit (like rickwaterman.com); the toggle
+  # overrides it and persists in localStorage.
   - source: github:quartz-community/darkmode
-    enabled: false
+    enabled: true
     layout:
       position: left
       priority: 30
@@ -283,7 +283,7 @@ plugins:
     enabled: true
     options:
       theme: nord
-      mode: dark
+      mode: both
   - source: github:quartz-community/obsidian-plugin-excalidraw
     enabled: true
     options:
