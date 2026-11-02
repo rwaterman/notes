@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "synth": "cdk synth",
+    "test": "tsx --test \"test/**/*.test.ts\"",
     "deploy": "cdk deploy --all --require-approval never"
   },
   "dependencies": {
