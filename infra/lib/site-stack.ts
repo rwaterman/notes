@@ -8,28 +8,29 @@ import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
-import { HOSTED_ZONE_ID, ZONE_NAME, GITHUB_REPO, SiteEnv } from './site-config';
+import { GITHUB_REPO, WEB_ACL_ARN_PARAMETER, StageConfig } from './site-config';
 
 export interface SiteStackProps extends cdk.StackProps {
-  site: SiteEnv;
+  stage: StageConfig;
   oidcProvider: iam.IOpenIdConnectProvider;
   certificate: acm.ICertificate;
 }
 
 /**
  * One notes environment: private S3 bucket behind a CloudFront distribution (Origin
- * Access Control), Route53 alias records, a directory-index CloudFront Function, and a
- * branch-scoped OIDC role for content deploys.
+ * Access Control), Route53 alias records, a directory-index CloudFront Function, and an
+ * environment-scoped OIDC role for content deploys.
  */
 export class SiteStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: SiteStackProps) {
     super(scope, id, props);
-    const { site, oidcProvider, certificate } = props;
-    const isProd = site.envName === 'prod';
+    const { stage, oidcProvider, certificate } = props;
+    const isProd = stage.envName === 'prod';
+    const attachDomains = this.node.tryGetContext('attachDomains') !== 'false';
 
     const zone = route53.HostedZone.fromHostedZoneAttributes(this, 'Zone', {
-      hostedZoneId: HOSTED_ZONE_ID,
-      zoneName: ZONE_NAME,
+      hostedZoneId: stage.hostedZoneId,
+      zoneName: stage.zoneName,
     });
 
     const bucket = new s3.Bucket(this, 'SiteBucket', {
@@ -45,19 +46,14 @@ export class SiteStack extends cdk.Stack {
       code: cloudfront.FunctionCode.fromInline(DIRECTORY_INDEX_FUNCTION),
     });
 
-    // Shared "blanket" CloudFront WebACL, owned by the website repo's SharedStack and
-    // published to SSM there. Read its ARN at deploy time and associate this distribution
-    // with it instead of defining a per-repo WebACL. Requires the website WebsiteShared
-    // stack to have deployed first so the parameter exists.
-    const sharedWebAclArn = ssm.StringParameter.valueForStringParameter(
-      this,
-      '/website/shared/cloudfront-webacl-arn',
-    );
+    const webAclId = stage.webAcl
+      ? ssm.StringParameter.valueForStringParameter(this, WEB_ACL_ARN_PARAMETER)
+      : undefined;
 
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
-      domainNames: [site.domainName],
+      domainNames: attachDomains ? [stage.domainName] : undefined,
       certificate,
-      webAclId: sharedWebAclArn,
+      webAclId,
       defaultRootObject: 'index.html',
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
       defaultBehavior: {
@@ -76,19 +72,21 @@ export class SiteStack extends cdk.Stack {
       ],
     });
 
-    const aliasTarget = route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution));
-    new route53.ARecord(this, 'AliasA', { zone, recordName: site.domainName, target: aliasTarget });
-    new route53.AaaaRecord(this, 'AliasAAAA', { zone, recordName: site.domainName, target: aliasTarget });
+    if (attachDomains) {
+      const aliasTarget = route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution));
+      new route53.ARecord(this, 'AliasA', { zone, recordName: stage.domainName, target: aliasTarget });
+      new route53.AaaaRecord(this, 'AliasAAAA', { zone, recordName: stage.domainName, target: aliasTarget });
+    }
 
-    // Branch-scoped CI role: only this env's branch can assume it, and it can only touch
-    // this env's bucket, distribution, and SSM parameters.
+    // Environment-scoped CI role: only this stage's GitHub environment can assume it, and it
+    // can only touch this stage's bucket, distribution, and SSM parameters.
     const contentRole = new iam.Role(this, 'ContentDeployRole', {
-      roleName: `notes-content-${site.envName}`,
-      description: `GitHub Actions role to deploy ${site.envName} notes content`,
+      roleName: `notes-content-${stage.envName}`,
+      description: `GitHub Actions role to deploy ${stage.envName} notes content`,
       assumedBy: new iam.OpenIdConnectPrincipal(oidcProvider, {
         StringEquals: {
           'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
-          'token.actions.githubusercontent.com:sub': `repo:${GITHUB_REPO}:ref:refs/heads/${site.branch}`,
+          'token.actions.githubusercontent.com:sub': `repo:${GITHUB_REPO}:environment:${stage.githubEnvironment}`,
         },
       }),
     });
@@ -102,20 +100,20 @@ export class SiteStack extends cdk.Stack {
     contentRole.addToPolicy(
       new iam.PolicyStatement({
         actions: ['ssm:GetParameter', 'ssm:GetParameters'],
-        resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter/notes/${site.envName}/*`],
+        resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter/notes/${stage.envName}/*`],
       }),
     );
 
     new ssm.StringParameter(this, 'BucketNameParam', {
-      parameterName: `/notes/${site.envName}/bucket-name`,
+      parameterName: `/notes/${stage.envName}/bucket-name`,
       stringValue: bucket.bucketName,
     });
     new ssm.StringParameter(this, 'DistributionIdParam', {
-      parameterName: `/notes/${site.envName}/distribution-id`,
+      parameterName: `/notes/${stage.envName}/distribution-id`,
       stringValue: distribution.distributionId,
     });
 
-    new cdk.CfnOutput(this, 'SiteUrl', { value: `https://${site.domainName}` });
+    new cdk.CfnOutput(this, 'SiteUrl', { value: `https://${stage.domainName}` });
     new cdk.CfnOutput(this, 'BucketName', { value: bucket.bucketName });
     new cdk.CfnOutput(this, 'DistributionId', { value: distribution.distributionId });
     new cdk.CfnOutput(this, 'ContentRoleArn', { value: contentRole.roleArn });

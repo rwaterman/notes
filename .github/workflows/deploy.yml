@@ -22,12 +22,12 @@ permissions:
   contents: read
 
 env:
-  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   AWS_REGION: us-west-2
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.env || (github.ref_name == 'main' && 'prod' || 'dev') }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -56,7 +56,7 @@ jobs:
               ;;
             dev)
               echo "name=dev" >> "$GITHUB_OUTPUT"
-              echo "host=notes-dev.rickwaterman.com" >> "$GITHUB_OUTPUT"
+              echo "host=notes.dev.rickwaterman.com" >> "$GITHUB_OUTPUT"
               ;;
             *)
               echo "Unsupported environment: $TARGET_ENV" >&2
@@ -106,7 +106,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/notes-content-${{ steps.target.outputs.name }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/notes-content-${{ steps.target.outputs.name }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Resolve deploy targets
