@@ -46,8 +46,6 @@ export class SiteStack extends cdk.Stack {
       code: cloudfront.FunctionCode.fromInline(DIRECTORY_INDEX_FUNCTION),
     });
 
-    // The account baseline (aws-orgs) owns the CloudFront web ACL and publishes its ARN to
-    // SSM. Only stages with webAcl set read it, so dev carries no WAF cost.
     const webAclId = stage.webAcl
       ? ssm.StringParameter.valueForStringParameter(this, WEB_ACL_ARN_PARAMETER)
       : undefined;

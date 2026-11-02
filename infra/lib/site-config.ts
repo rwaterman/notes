@@ -20,14 +20,10 @@ export interface SiteEnv {
 }
 
 export interface StageConfig extends SiteEnv {
-  /** AWS account that owns this stage. */
   account: string;
-  /** Public hosted zone in that account that holds the stage's records. */
   hostedZoneId: string;
   zoneName: string;
-  /** GitHub environment whose OIDC subject the stage's roles trust. */
   githubEnvironment: StageName;
-  /** Attach the account's CloudFront web ACL, read from SSM. */
   webAcl: boolean;
 }
 
@@ -81,10 +77,6 @@ export function resolveStage(app: cdk.App, env: NodeJS.ProcessEnv): StageConfig 
   return stage;
 }
 
-/**
- * The GitHub Actions OIDC provider is an account-level singleton owned by the account
- * baseline in the aws-orgs repo, so stacks here import it by ARN.
- */
 export function oidcProviderArn(account: string): string {
   return `arn:aws:iam::${account}:oidc-provider/token.actions.githubusercontent.com`;
 }
