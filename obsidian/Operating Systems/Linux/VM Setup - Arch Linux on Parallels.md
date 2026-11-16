@@ -4,7 +4,7 @@ tags: [linux, arch, arm64, parallels, macos, vm, kde, tailscale, setup]
 
 # VM Setup — Arch Linux ARM on Parallels
 
-Arch Linux ARM on an Apple Silicon Mac in Parallels Desktop, from the Archboot ISO to a KDE Plasma desktop reachable over Tailscale. Every command below was run on Parallels Desktop 27, Archboot `2026.10.12` (`aarch64`, `local` image) and kernel `7.2.10-1-aarch64-ARCH`. For hardening the same box as a server, see [[VPS Setup - Arch Linux]].
+Arch Linux ARM on an Apple Silicon Mac in Parallels Desktop, from the Archboot ISO to a KDE Plasma desktop reachable over Tailscale. Every command below was run on Parallels Desktop 27.1.0 with Archboot `2026.10.12` (`aarch64`, `local` image, kernel `7.2.10-1-aarch64-ARCH`); the upgrade in section 8 moved the installed system to kernel `7.3.4-2-aarch64-ARCH`. The 2026-11-14 run covered everything except the `libplasma` build in section 10, bridged networking in section 12 and section 14. For hardening the same box as a server, see [[VPS Setup - Arch Linux]]. CPU, memory and disk size, encryption and snapshots are in [[VM Setup - Parallels Settings]].
 
 > [!warning] Why installs boot back into the ISO
 > Parallels' ARM firmware boots the disk through an auto-created entry that only looks for the removable-media fallback loader, `\EFI\BOOT\BOOTAA64.EFI` on the EFI system partition (ESP). A bootloader installed only under a vendor path such as `\EFI\arch\` is invisible to it. The firmware then falls through to the CD and boots the ISO again, or, with the ISO detached, shows **No OS found**. `bootctl install` (systemd-boot) writes the fallback file; section 6 checks for it before the first reboot.
@@ -36,7 +36,7 @@ prlctl list -i "$VM" | grep -E 'Boot order|BIOS type|Secure boot'
 prlctl start "$VM"
 ```
 
-Expect `Boot order: hdd0 cdrom0`, `BIOS type: efi-arm64` and `EFI Secure boot: off`. Keep the disk first for the whole install: an empty disk falls through to the CD, and once the bootloader exists the disk wins with no settings change. 8 GB of memory is enough to install; raise it later with `--memsize`.
+Expect `Boot order: hdd0 cdrom0` (a `usb` entry may follow), `BIOS type: efi-arm64` and `EFI Secure boot: off`. Keep the disk first for the whole install: an empty disk falls through to the CD, and once the bootloader exists the disk wins with no settings change. 8 GB of memory is enough to install; raise it later with `--memsize`. For a disk larger than 64 GB, set the size now, before partitioning: `prlctl set "$VM" --device-set hdd0 --size 262144 --no-fs-resize` gives 256 GB. Growing it after the install takes the extra guest steps in [[VM Setup - Parallels Settings]].
 
 ## 2. Boot Archboot and get SSH
 
@@ -62,7 +62,13 @@ ssh -p 11838 root@10.211.55.x
 Everything from here can be pasted over SSH.
 
 > [!tip] Typing into the console from the Mac
-> `prlctl send-key-event "$VM" --scancode <code>` types into the VM, and `prlctl capture "$VM" --file screen.png` screenshots it. Send each key as one call without `--event`, so press and release travel together. Separate press and release calls are slow enough to trigger key auto-repeat.
+> `prlctl send-key-event` types into the VM, and `prlctl capture "$VM" --file screen.png` screenshots it. Send a whole string as one JSON batch on standard input, each key as a press and a release with a 50 ms delay. This sends Enter (scancode 28):
+>
+> ```sh
+> echo '[{"scancode":28,"event":"press","delay":50},{"scancode":28,"event":"release","delay":50}]' | prlctl send-key-event "$VM" --json
+> ```
+>
+> One `prlctl` call per key drops some characters and auto-repeats others. A batch with a 15 ms delay still drops characters. Screenshot the console to check what landed before relying on it.
 
 ## 3. Partition and format
 
@@ -188,14 +194,17 @@ The installed system has no initialized keyring, and its repositories are the Ar
 ```sh
 pacman-key --init
 pacman-key --populate
-pacman-key --list-keys builder@archlinuxarm.org  # compare with the published fingerprint
+pacman-key --keyserver hkps://keyserver.ubuntu.com --recv-keys 68B3537F39A313B3E574D06777193F152BDBE6A6
+pacman-key --finger builder@archlinuxarm.org     # compare with the published fingerprint
 pacman-key --lsign-key 68B3537F39A313B3E574D06777193F152BDBE6A6
 pacman -Sy --noconfirm archlinuxarm-keyring
 pacman-key --populate archlinuxarm
 pacman -Syu sudo
 ```
 
-`archlinuxarm-keyring` is the one package to install with `-Sy` on its own; the `-Syu` that follows completes the upgrade.
+- The fresh keyring holds only the Arch Linux keys, so the build key has to be received before it can be signed. Without `--recv-keys`, `--lsign-key` stops with `gpg: error reading key: No public key`.
+- `archlinuxarm-keyring` is the one package to install with `-Sy` on its own; the `-Syu` that follows completes the upgrade.
+- The upgrade installs a newer kernel. Reboot before section 13 so Parallels Tools builds against the running kernel.
 
 ## 9. Admin user
 
@@ -233,7 +242,7 @@ Arch Linux ARM rebuilds packages some days after Arch Linux. In October 2026 its
 plasma-login-greeter: error while loading shared libraries: libPlasmaQuick.so.7: cannot open shared object file
 ```
 
-Check for the mismatch before installing: the major and minor versions of these two should agree.
+Check for the mismatch before installing: the major and minor versions of these two should agree. On 2026-11-14 both were 6.8.2 and Plasma worked without the hold below.
 
 ```sh
 pacman -Si libplasma plasma-workspace | grep -E '^(Name|Version)'
@@ -283,13 +292,12 @@ cd yay && makepkg -si
 
 ## 12. Tailscale and SSH
 
-`tailscale` is in the Arch Linux ARM `extra` repository; `yay -S tailscale` resolves to the same package.
+`tailscale` is in the Arch Linux ARM `extra` repository; `yay -S tailscale` resolves to the same package. `--hostname` sets the MagicDNS name: `arch-dev.<tailnet>.ts.net`.
 
 ```sh
 sudo pacman -S --needed tailscale
 sudo systemctl enable --now tailscaled
-sudo tailscale up                                # prints a login URL; approve the machine in the browser
-sudo tailscale set --hostname=arch-dev           # MagicDNS name: arch-dev.<tailnet>.ts.net
+sudo tailscale up --hostname=arch-dev            # prints a login URL; approve the machine in the browser
 ```
 
 Keys only for OpenSSH:
@@ -302,7 +310,7 @@ CONF
 sudo sshd -t && sudo systemctl reload sshd
 ```
 
-From any machine on the tailnet: `ssh alice@arch-dev`. `sudo tailscale set --ssh` is the alternative: Tailscale authenticates SSH sessions with the tailnet's access rules instead of keys. The full SSH and firewall hardening is in [[VPS Setup - Arch Linux]].
+From any machine on the tailnet: `ssh alice@arch-dev`. The matching `~/.ssh/config` entry for the Mac is in [[VM Setup - Parallels Settings]]. `sudo tailscale set --ssh` is the alternative: Tailscale authenticates SSH sessions with the tailnet's access rules instead of keys. The full SSH and firewall hardening is in [[VPS Setup - Arch Linux]].
 
 **Networking mode.** Shared networking (the default) puts the VM behind NAT on `10.211.55.0/24`, reachable from the Mac only. Bridged networking gives it its own address from the LAN's DHCP server, so Tailscale peers on the LAN connect to it directly:
 
@@ -322,11 +330,13 @@ sudo pacman -S --needed base-devel linux-aarch64-headers
 # On the Mac
 prlctl installtools "$VM"
 # In the VM
-sudo mount -o ro /dev/sr0 /mnt && sudo /mnt/install && sudo umount /mnt
+sudo mount -o ro /dev/sr0 /mnt && sudo /mnt/install --install-unattended-with-deps && sudo umount /mnt
 sudo reboot
 ```
 
-Tools `27.0.3` installed cleanly on kernel 7.2.10; the installer also pulls `net-tools`. The log is `/var/log/parallels-tools-install.log` and the service is `prltoolsd.service`.
+`--install-unattended-with-deps` runs the installer without its menu and lets it download the packages it needs. It prints `mkdir: cannot create directory '/mnt/psf': Read-only file system` because the image is mounted on `/mnt`; the install still finishes with `Parallels Guest Tools were installed successfully!`. `prlctl installtools` leaves the Tools image attached, so detach it afterwards with `prlctl set "$VM" --device-set cdrom0 --disconnect`.
+
+Tools `27.1.0` installed cleanly on kernel 7.3.4; the installer also pulls `net-tools`. The log is `/var/log/parallels-tools-install.log` and the service is `prltoolsd.service`.
 
 ## 14. Keep it running
 
@@ -367,6 +377,8 @@ coredumpctl list --since -10min                  # no repeating crashes
 | `/proc must be mounted!` during install | Hooks ran outside a chroot | `mkinitcpio -P` in `arch-chroot` (section 5) |
 | Port 22 connection refused on the live ISO | Archboot `sshd` uses port 11838 | `ssh -p 11838` |
 | `signature … is unknown trust` | Arch Linux ARM build key not trusted | Section 8 |
+| `gpg: error reading key: No public key` | Build key not in the fresh keyring | `--recv-keys` first (section 8) |
+| Dropped or repeated characters typed with `send-key-event` | One call per key, or too short a delay | One JSON batch, 50 ms delay (section 2) |
 | Black screen with only a cursor at login | `libplasma` newer than the rest of Plasma | Section 10 |
 | Repeating `baloo_file_extractor` core dumps | Extractor has no display | Offscreen override (section 10) |
 | `Password change required but no TTY available` | Expired password | Log in interactively once |
