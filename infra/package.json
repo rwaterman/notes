@@ -8,12 +8,12 @@
     "deploy": "cdk deploy --all --require-approval never"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.275.0",
+    "aws-cdk-lib": "^2.276.0",
     "constructs": "^10.6.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "aws-cdk": "^2.1147.0",
+    "aws-cdk": "^2.1148.1",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }
